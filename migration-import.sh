@@ -1,0 +1,259 @@
+#!/usr/bin/env smash
+# Usage: run as root.
+# WARNING! 
+# Requires *migrate.smash* to have ran first on the old server, 
+# and the /migration/ folder to exist on the new server!
+# Also, make sure all files exist. Required: migration.tar.gz
+# WARNING! 
+# The script assumes you have already generated new server keys.
+# If not, then do so first as password login will be disabled.
+
+"use pipefail";
+"use unsafe";
+
+let mysql_user = 'admin';
+let mysql_pass = '';
+
+// Untar the migration tarball.
+cd /
+ls -la
+mkdir -p migration
+chmod 0755 migration
+tar -xzvf migration.tar.gz
+
+echo `Starting to restore the server...`;
+echo `-----------------------------------------------------------------`;
+echo `Starting to restore firewall...`;
+
+// Disable nftables
+sudo systemctl stop nftables
+sudo systemctl disable nftables
+sudo update-alternatives --set iptables /usr/sbin/iptables-legacy
+sudo update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
+sudo nft flush ruleset
+sudo iptables-restore < /etc/iptables/rules.v4
+sudo systemctl disable netfilter-persistent
+sudo systemctl mask netfilter-persistent
+sudo apt remove -y netfilter-persistent iptables-persistent
+echo "flush ruleset" >> /etc/nftables.conf
+sudo apt-mark hold nftables
+sudo apt purge -y nftables
+
+// Restore firewall
+sudo apt install ipset
+ipset restore < migration/firewall/ipset.txt
+iptables-restore < migration/firewall/iptables.txt
+
+echo `------------------------------------------------------------ done!`;
+
+// Disable unnecessary services first
+sudo systemctl disable avahi-daemon
+sudo systemctl disable cups
+sudo systemctl disable bluetooth
+sudo apt remove -y ubuntu-kernel-accessories ubuntu-standard
+sudo apt autoremove -y
+sudo apt remove -y eatmydata telnet inetutils-telnet swaks webalizer bpfcc-tools bpftrace bpfmon strace trace-cmd apport 
+sudo apt remove -y snapd modemmanager tnftp procmail rmail ruby-net-telnet arp-scan xclip sosreport 
+sudo apt remove -y lxd-agent-loader lxd-installer multipath-tools
+sudo apt remove -y bpfcc-tools bpftrace bpfmon bpfcc-lua
+sudo apt-mark hold bpfcc-tools bpftrace bpfmon
+sudo apt autoremove -y
+
+// Prime server with software packages
+sudo apt install -y software-properties-common unattended-upgrades apt-listchanges 
+sudo apt install -y ca-certificates lsb-release apt-transport-https
+sudo apt install -y apache2 apache2-utils libapache2-mod-evasive libapache2-mod-qos
+sudo apt install -y certbot python3-certbot-apache
+sudo apt install -y curl wget git htop unzip nano net-tools logwatch
+sudo apt install -y postfix dovecot-core dovecot-imapd dovecot-lmtpd
+sudo apt install -y unbound fail2ban lynis opendkim
+sudo apt install -y libpam-pwquality mailutils jq
+sudo apt install -y apparmor apparmor-utils auditd ssh-audit apt-listchanges libpam-tmpdir
+
+add-apt-repository ppa:ondrej/php -y
+sudo apt install -y php8.4 php8.4-cli php8.4-common php8.4-fpm php8.4-mysql php8.4-redis php8.4-curl php8.4-mbstring php8.4-xml php8.4-zip php8.4-intl php8.4-soap php8.4-bcmath php8.4-gd php8.4-imagick imagemagick php8.4-common php8.4-json php8.4-ldap php8.4-pgsql php8.4-sqlite3 php8.4-xdebug php8.4-bz2   
+
+let configs = [
+    'customsysctl|root:root|etc/sysctl.d/99-custom.conf',
+    'hardensysctl|root:root|etc/sysctl.d/99-harden.conf',
+    'hardentailscale|root:root|/etc/sysctl.d/99-tailscale.conf',
+    'issue|root:root|etc/issue',
+    'issuenet|root:root|etc/issue.net',
+    'resolv|root:root|etc/resolv.conf',
+    'mailname|root:root|etc/mailname',
+    'aliases|root:root|etc/aliases',
+    'aliasesdb|root:root|etc/aliases.db',
+    'hostname|root:root|etc/hostname'
+];
+
+// Compress folders
+let files = [
+    'apt|root:root|etc/apt/',
+    'home|root:root|home/',
+    'root|root:root|root/',
+    'websites|www-data:www-data|var/www/',
+    'logs|root:syslog|var/log/',
+    'backups|root:root|var/backups/',
+    'sbin|root:root|usr/local/sbin/',
+    'bin|root:root|usr/local/bin/',
+    'letsencrypt|root:root|etc/letsencrypt/',
+    'apache2|root:root|etc/apache2/',
+    'mysql|root:root|etc/mysql/',
+    'crondaily|root:root|etc/cron.daily/',
+    'cronhourly|root:root|etc/cron.hourly/',
+    'cronweekly|root:root|etc/cron.weekly/',
+    'cronmonthly|root:root|etc/cron.monthly/',
+    'cronyearly|root:root|etc/cron.yearly/',
+    'crontab|root:root|etc/crontab',
+    'crond|root:root|etc/cron.d/',
+    'logrotate|root:root|etc/logrotate.d/',
+    'crontabs|root:root|var/spool/cron/crontabs/',
+    'fail2ban|root:root|etc/fail2ban/',
+    'iptables|root:root|etc/iptables/',
+    'php|root:root|etc/php/',
+    'unbound|root:root|etc/unbound/',
+    'tailscale|root:root|etc/tailscale/',
+    'headscale|root:root|etc/headscale/',
+    'postfix|root:root|etc/postfix/',
+    'dovecot|root:root|etc/dovecot/',
+    'opendkim|opendkim:opendkim|etc/opendkim/',
+    'dkimkeys|root:root|etc/dkimkeys/',
+    'mail|root:mail|var/mail/'
+];
+
+// Optional ssh, but requires new keys.
+// ssh|root:root|etc/ssh/
+
+// Custom systemd services, if you have them. If not, you can remove it.
+let systemd = [
+    'auth-watcher.service|root:root|etc/systemd/system/auth-watcher.service',
+    'unbound-tailscale.service|root:root|etc/systemd/system/unbound-tailscale.service',
+    'iptables-restore-onboot.service|root:root|etc/systemd/system/iptables-restore-onboot.service',
+    'disable-ipv6.service|root:root|etc/systemd/system/disable-ipv6.service'
+];
+
+// bin scripts
+let bin = [
+    'auth_monitor.sh|root:root|usr/local/bin/auth_monitor.sh',
+    'auth_watcher.sh|root:root|usr/local/bin/auth_watcher.sh',
+    'block.sh|root:root|usr/local/bin/block.sh',
+    'block_persistent_attackers.sh|root:root|usr/local/bin/block_persistent_attackers.sh',
+    'firewall|root:root|usr/local/bin/firewall',
+    'occ|root:root|usr/local/bin/occ',
+    'service-watchdog.sh|root:root|usr/local/bin/service-watchdog.sh',
+    'unbound-prepost-tailscale.sh|root:root|usr/local/bin/unbound-prepost-tailscale.sh',
+    'vps-audit.sh|root:root|usr/local/bin/vps-audit.sh'
+];
+
+// sbin scripts
+let sbin = [
+    'backup-data.sh|root:root|usr/local/sbin/backup-data.sh',
+    'backup-server.sh|root:root|usr/local/sbin/backup-server.sh',
+    'certs.sh|root:root|usr/local/sbin/certs.sh',
+    'check-iptables.sh|root:root|usr/local/sbin/check-iptables.sh',
+    'iptables-restore-onboot.sh|root:root|usr/local/sbin/iptables-restore-onboot.sh',
+    'mail-certs.sh|root:root|usr/local/sbin/mail-certs.sh',
+    'package-backups.sh|root:root|usr/local/sbin/package-backups.sh',
+    'tailscale-watch.sh|root:root|usr/local/sbin/tailscale-watch.sh'
+];
+
+bin.forEach(b => {
+    let a = b.split('|');
+    let name = a[0];
+    let path = a[2];
+    echo `Restoring: $name`;
+    cd /
+    touch $path
+    cp migration/bin/$name $path 
+    chmod 0755 $path
+    echo `---------------------------------------------------------done!`;
+});
+
+sbin.forEach(sb => {
+    let a = sb.split('|');
+    let name = a[0];
+    let path = a[2];
+    echo `Restoring: $name`;
+    cd /
+    touch $path
+    cp migration/sbin/$name $path 
+    chmod 0755 $path
+    echo `---------------------------------------------------------done!`;
+});
+
+files.forEach(f => {
+    let a = f.split('|');
+    let name = a[0];
+    let path = a[2];
+    let chwn = a[1];
+    echo `Restoring: $name`;
+    cd /
+    tar -xzvf "migration/compressed/$(basename "$name").tar.gz";
+    chown -R $chwn $path
+    echo `---------------------------------------------------------done!`;
+});
+
+configs.forEach(p => {
+    let a = p.split('|');
+    let name = a[0];
+    let path = a[2];
+    let chwn = a[1];
+    echo `Restoring: $name`;
+    cd /
+    touch $path
+    cp migration/configs/$name $path 
+    chown $chwn $path
+    chmod 0755 $path
+    echo `---------------------------------------------------------done!`;
+});
+
+systemd.forEach(s => {
+    let a = s.split('|');
+    let name = a[0];
+    let path = a[2];
+    let chwn = a[1];
+    echo `Restoring: $name`;
+    cd /
+    cp migration/systemd/system/$name $path 
+    chown $chwn $path
+    chmod +x $path
+    systemctl start $name
+    echo `---------------------------------------------------------done!`;
+});
+
+// Finally, finish priming.
+sudo a2enmod headers ssl rewrite expires deflate proxy proxy_http proxy_wstunnel
+sudo a2enconf security security-headers
+
+// Make sure all html folders are www-data.
+chown -R www-data:www-data var/www/
+
+// Default 0755, change if needed...
+chmod 0755 -R var/www/
+
+// Apache configs
+sudo a2dismod mpm_event
+sudo a2dismod mpm_worker
+sudo a2enmod mpm_prefork
+sudo a2enmod php8.4
+
+// Final update
+sudo apt update
+sudo apt autoremove -y
+
+// Systemd resolver
+systemctl start systemd-resolved.service
+systemctl daemon-reload
+sudo systemctl restart apache2
+echo `------------------------------------------------------------------ `;
+journalctl -n 10
+echo `------------------------------------------------------------------ `;
+
+// Next steps
+echo `Finished priming.`;
+echo `------------------------------------------------------------------ `;
+echo `Final manual step 0: install and configure tailscale/headscale manually. Too complex to automate reliably.`;
+echo `Final manual step 1: enable all your vhosts: a2ensite <domainname>`;
+echo `Final manual step 2: install MySQL manually: sudo apt install -y mysql-server`;
+echo `Final manual step 3: chmod all cron files, i.e.: chmod +x /etc/cron.daily/00logwatch`;
+echo `Final manual step 5: restart all services, or reboot. (recommended)`;
