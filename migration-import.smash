@@ -83,7 +83,9 @@ let configs = [
     'mailname|root:root|etc/mailname',
     'aliases|root:root|etc/aliases',
     'aliasesdb|root:root|etc/aliases.db',
-    'hostname|root:root|etc/hostname'
+    'hostname|root:root|etc/hostname',
+    'sshd-config|root:root|etc/ssh/sshd_config',
+    'sshd-config.d|root:root|etc/ssh/sshd_config.d'
 ];
 
 // Compress folders
@@ -256,4 +258,4 @@ echo `Final manual step 0: install and configure tailscale/headscale manually. T
 echo `Final manual step 1: enable all your vhosts: a2ensite <domainname>`;
 echo `Final manual step 2: install MySQL manually: sudo apt install -y mysql-server`;
 echo `Final manual step 3: chmod all cron files, i.e.: chmod +x /etc/cron.daily/00logwatch`;
-echo `Final manual step 5: restart all services, or reboot. (recommended)`;
+echo `Final manual step 4: restart all services, or reboot. (recommended)`;
