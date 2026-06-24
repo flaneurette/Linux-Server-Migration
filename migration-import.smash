@@ -21,6 +21,11 @@ mkdir -p migration
 chmod 0755 migration
 tar -xzvf migration.tar.gz
 
+// First copy apt, very important if you enabled ssl for it (recommended)
+cd /
+tar -xzvf "migration/compressed/apt.tar.gz";
+chown -R root:root etc/apt/
+
 echo `Starting to restore the server...`;
 echo `-----------------------------------------------------------------`;
 echo `Starting to restore firewall...`;
@@ -45,11 +50,6 @@ ipset restore < migration/firewall/ipset.txt
 iptables-restore < migration/firewall/iptables.txt
 
 echo `------------------------------------------------------------ done!`;
-
-// First copy apt, very important if you enabled ssl for it (recommended)
-cd /
-tar -xzvf "migration/compressed/apt.tar.gz";
-chown -R root:root etc/apt/
     
 // Disable unnecessary services first
 sudo systemctl disable avahi-daemon
