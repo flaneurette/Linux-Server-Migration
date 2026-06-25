@@ -15,6 +15,21 @@ To install SMASH:
 
 https://github.com/flaneurette/SMASH
 
+Install:
+
+```
+1. Download the .deb file
+wget https://github.com/flaneurette/SMASH/raw/refs/heads/main/builds/smash_1.3-0_all.deb
+
+2. Install the package
+sudo dpkg -i smash_1.3-0_all.deb
+
+3. Run SMASH
+smash -v
+```
+
+Or use the Ubuntu PPA (does not have the lastest version!)
+
 ```
 sudo add-apt-repository ppa:flaneurette/smash
 sudo apt update
