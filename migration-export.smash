@@ -40,8 +40,8 @@ let configs = [
     'aliases|root:root|etc/aliases',
     'aliasesdb|root:root|etc/aliases.db',
     'hostname|root:root|etc/hostname',
-    'sshd-config|root:root|etc/ssh/sshd_config',
-    'sshd-config.d|root:root|etc/ssh/sshd_config.d'
+    'ssh-config|root:root|etc/ssh/ssh_config',
+    'sshd-config|root:root|etc/ssh/sshd_config'
 ];
 
 // Compress folders
@@ -76,8 +76,7 @@ let files = [
     'dovecot|root:root|etc/dovecot/',
     'opendkim|opendkim:opendkim|etc/opendkim/',
     'dkimkeys|root:root|etc/dkimkeys/',
-    'mail|root:mail|var/mail/',
-    'ssh|root:root|etc/ssh/'
+    'mail|root:mail|var/mail/'
 ];
 
 // Custom systemd services, if you have them. If not, you can remove it.
