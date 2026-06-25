@@ -91,8 +91,8 @@ let configs = [
     'aliases|root:root|etc/aliases',
     'aliasesdb|root:root|etc/aliases.db',
     'hostname|root:root|etc/hostname',
-    'sshd-config|root:root|etc/ssh/sshd_config',
-    'sshd-config.d|root:root|etc/ssh/sshd_config.d'
+    'ssh-config|root:root|etc/ssh/ssh_config',
+    'sshd-config|root:root|etc/ssh/sshd_config'
 ];
 
 // Compress folders
