@@ -119,7 +119,7 @@ files.forEach(f => {
     echo `Making backup of: $name`;
     cd /
     tar -czvf "migration/compressed/$(basename "$name").tar.gz" "$path";
-    echo `---------------------------------------------------------done!`;
+    echo `--------------------------------------------------------- done!`;
 });
 
 configs.forEach(p => {
@@ -131,7 +131,7 @@ configs.forEach(p => {
     touch migration/configs/$name
     cp -v $path migration/configs/$name
     chmod 0755 migration/configs/$name
-    echo `---------------------------------------------------------done!`;
+    echo `--------------------------------------------------------- done!`;
 });
 
 systemd.forEach(s => {
@@ -143,7 +143,7 @@ systemd.forEach(s => {
     touch migration/systemd/system/$name
     cp -v $path migration/systemd/system/$name
     chmod 0755 migration/systemd/system/$name
-    echo `---------------------------------------------------------done!`;
+    echo `--------------------------------------------------------- done!`;
 });
 
 bin.forEach(b => {
@@ -155,7 +155,7 @@ bin.forEach(b => {
     touch migration/bin/$name
     cp -v $path migration/bin/$name
     chmod 0755 migration/bin/$name
-    echo `---------------------------------------------------------done!`;
+    echo `--------------------------------------------------------- done!`;
 });
 
 sbin.forEach(b => {
@@ -167,7 +167,7 @@ sbin.forEach(b => {
     touch migration/sbin/$name
     cp -v $path migration/sbin/$name
     chmod 0755 migration/sbin/$name
-    echo `---------------------------------------------------------done!`;
+    echo `--------------------------------------------------------- done!`;
 });
 
 // Finally, make a tarball for all files
