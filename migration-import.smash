@@ -245,6 +245,19 @@ sudo a2dismod mpm_worker
 sudo a2enmod mpm_prefork
 sudo a2enmod php8.4
 
+// Dovcot processing IF using VMAIL (recommended for many vhosts)
+echo `---------------------------------------------------------done!`;
+sudo groupadd -g 5000 vmail
+sudo useradd -u 5000 -g vmail -d /var/vmail -m vmail
+sudo chown -R vmail:vmail /var/vmail
+sudo chmod -R 750 /var/vmail
+sudo chown root:dovecot /etc/dovecot/users
+sudo chmod 640 /etc/dovecot/users
+sudo usermod -aG dovecot dovecot
+sudo ls -la /etc/dovecot/users
+sudo systemctl restart dovecot postfix
+echo `---------------------------------------------------------done!`;
+
 // Final update
 sudo apt update
 sudo apt autoremove -y
