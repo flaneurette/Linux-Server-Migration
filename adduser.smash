@@ -6,7 +6,7 @@
 
 let users = [
     'admin|Server Administrator|sudo,adm,docker,www-data,mail,systemd-journal',
-    'appuser|Application Users|www-data,mail',
+    'appuser|Application User|www-data,mail',
     'backup|Backup User|sudo'
 ];
 
