@@ -1,0 +1,42 @@
+// =============================================
+// USER MANAGEMENT SECTION
+// =============================================
+
+// <user> | <name/role> | <rights>
+
+let users = [
+    'admin|Server Administrator|sudo,adm,docker,www-data,mail,systemd-journal',
+    'appuser|Application Users|www-data,mail',
+    'backup|Backup User|sudo'
+];
+
+echo `-----------------------------------------------------------------`;
+echo `Setting up user accounts...`
+echo `-----------------------------------------------------------------`;
+
+files.forEach(f => {
+    let u = f.split('|');
+    let name = u[0];
+    let role = u[1];
+    let rights = u[2];
+    sudo useradd -m -s /bin/bash -U -c "$role" $name
+    sudo usermod -aG $rights $name
+    echo `-----------------------------------------------------------------`;
+    echo `Password for $name:`
+    echo echo "$name:$(openssl rand -base64 16)" | sudo chpasswd
+    echo `-----------------------------------------------------------------`;
+    // Configure Bash
+    sudo chown $name:$name /home/$name/.bashrc
+    sudo chmod 644 /home/$name/.bashrc
+    // Configure SSH
+    sudo mkdir -p /home/$name/.ssh
+    sudo chown $name:$name /home/$name/.ssh
+    sudo chmod 700 /home/$name/.ssh
+    sudo chown admin:admin /home/$name/.ssh/authorized_keys
+    sudo chmod 600 /home/$name/.ssh/authorized_keys
+});
+
+echo `You can now proceed generating server keys for each user, manually`;
+echo `-----------------------------------------------------------------`;
+echo `User accounts created and configured successfully!`
+echo `-----------------------------------------------------------------`;
