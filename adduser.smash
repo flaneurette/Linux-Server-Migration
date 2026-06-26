@@ -28,18 +28,27 @@ users.forEach(f => {
     echo `Password for $name:`
     echo "$name:$password" | sudo chpasswd
     echo `-----------------------------------------------------------------`;
+    cd /
+    // Configure home
+    sudo chown $name:$name home/$name/
+    sudo chmod 755 home/$name/
     // Configure Bash
-    sudo chown $name:$name /home/$name/.bashrc
-    sudo chmod 644 /home/$name/.bashrc
+    sudo touch home/$name/.bashrc
+    sudo chown $name:$name home/$name/.bashrc
+    sudo chmod 644 home/$name/.bashrc
     // Configure SSH
-    sudo mkdir -p /home/$name/.ssh
-    sudo chown $name:$name /home/$name/.ssh
-    sudo chmod 700 /home/$name/.ssh
-    sudo chown admin:admin /home/$name/.ssh/authorized_keys
-    sudo chmod 600 /home/$name/.ssh/authorized_keys
+    sudo touch home/$name/.ssh
+    sudo chown $name:$name home/$name/.ssh
+    sudo chmod 700 home/$name/.ssh
+    sudo touch home/$name/.ssh/authorized_keys
+    sudo chown $name:$name home/$name/.ssh/authorized_keys
+    sudo chmod 600 home/$name/.ssh/authorized_keys
 });
 
-echo `You can now proceed generating server keys for each user, manually`;
+echo `You can now proceed generating server keys for each user, manually:`;
+echo `-----------------------------------------------------------------`;
+echo `-u username ssh-keygen -t ed25519 -f /home/username/.ssh/id_ed25519 -N ""`;
+echo `-u admin sh -c "cat /home/username/.ssh/id_ed25519.pub >> /home/username/.ssh/authorized_keys"`;
 echo `-----------------------------------------------------------------`;
 echo `User accounts created and configured successfully!`
 echo `-----------------------------------------------------------------`;
