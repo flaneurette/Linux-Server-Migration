@@ -15,6 +15,7 @@ echo `Setting up user accounts...`
 echo `-----------------------------------------------------------------`;
 
 files.forEach(f => {
+    let passord = $(openssl rand -base64 16);
     let u = f.split('|');
     let name = u[0];
     let role = u[1];
@@ -23,7 +24,7 @@ files.forEach(f => {
     sudo usermod -aG $rights $name
     echo `-----------------------------------------------------------------`;
     echo `Password for $name:`
-    echo echo "$name:$(openssl rand -base64 16)" | sudo chpasswd
+    echo "$name:$password" | sudo chpasswd
     echo `-----------------------------------------------------------------`;
     // Configure Bash
     sudo chown $name:$name /home/$name/.bashrc
