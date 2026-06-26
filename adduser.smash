@@ -1,8 +1,7 @@
-// =============================================
-// USER MANAGEMENT SECTION
-// =============================================
+#!/usr/bin/env smash
 
-// <user> | <name/role> | <rights>
+"use pipefail";
+"use unsafe";
 
 let users = [
     'admin|Server Administrator|sudo,adm,www-data,mail,systemd-journal',
