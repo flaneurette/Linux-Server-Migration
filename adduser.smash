@@ -21,11 +21,11 @@ users.forEach(f => {
     let name = u[0];
     let role = u[1];
     let rights = u[2];
-    sudo useradd -m -s /bin/bash -U -c "$role" $name
-    sudo usermod -aG $rights $name
+    let add = $(sudo useradd -m -s /bin/bash -p $password -U -c "$role" "$name");
+    let chg = $(sudo usermod -aG "$rights" "$name");
     echo `-----------------------------------------------------------------`;
     echo `Password for $name:`
-    echo "$name:$password" | sudo chpasswd
+    echo $name:$password;
     echo `-----------------------------------------------------------------`;
     cd /
     // Configure home
