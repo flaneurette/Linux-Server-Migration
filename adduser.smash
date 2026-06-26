@@ -45,10 +45,9 @@ users.forEach(f => {
     sudo chmod 600 home/$name/.ssh/authorized_keys
 });
 
-echo `You can now proceed generating server keys for each user, manually:`;
-echo `-----------------------------------------------------------------`;
-echo `"-u username ssh-keygen -t ed25519 -f /home/username/.ssh/id_ed25519 -N """`;
-echo `"-u admin sh -c "cat /home/username/.ssh/id_ed25519.pub >> /home/username/.ssh/authorized_keys""`;
+echo `You can now proceed generating server keys for each user, manually`;
+// sudo -u username ssh-keygen -t ed25519 -f /home/username/.ssh/id_ed25519 -N ""
+// sudo -u admin sh -c "cat /home/username/.ssh/id_ed25519.pub >> /home/username/.ssh/authorized_keys"
 echo `-----------------------------------------------------------------`;
 echo `User accounts created and configured successfully!`
 echo `-----------------------------------------------------------------`;
