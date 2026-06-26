@@ -5,7 +5,7 @@
 // <user> | <name/role> | <rights>
 
 let users = [
-    'admin|Server Administrator|sudo,adm,docker,www-data,mail,systemd-journal',
+    'admin|Server Administrator|sudo,adm,www-data,mail,systemd-journal',
     'appuser|Application User|www-data,mail',
     'backup|Backup User|sudo'
 ];
