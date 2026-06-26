@@ -15,7 +15,7 @@ echo `Setting up user accounts...`
 echo `-----------------------------------------------------------------`;
 
 files.forEach(f => {
-    let passord = $(openssl rand -base64 16);
+    let password = $(openssl rand -base64 16);
     let u = f.split('|');
     let name = u[0];
     let role = u[1];
