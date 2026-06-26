@@ -4,8 +4,8 @@
 "use unsafe";
 
 let users = [
-    'admin|Server Administrator|sudo,adm,www-data,mail,systemd-journal',
-    'appuser|Application User|www-data,mail',
+    'admin|Server Administrator|sudo',
+    'appuser|Application User|www-data',
     'backup|Backup User|sudo'
 ];
 
