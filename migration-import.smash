@@ -86,7 +86,7 @@ sudo apt install -y dput devscripts build-essential dpkg-dev debhelper
 let configs = [
     'customsysctl|root:root|etc/sysctl.d/99-custom.conf',
     'hardensysctl|root:root|etc/sysctl.d/99-harden.conf',
-    'hardentailscale|root:root|/etc/sysctl.d/99-tailscale.conf',
+    'hardentailscale|root:root|etc/sysctl.d/99-tailscale.conf',
     'issue|root:root|etc/issue',
     'issuenet|root:root|etc/issue.net',
     'resolv|root:root|etc/resolv.conf',
