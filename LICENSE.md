@@ -1,0 +1,1 @@
+This code is free to use, modify, adapt. It is without warranty. The authors cannot be held responsibile for any damage or liability, especially occuring with the use of it, it's code, modifications, uses, etc. Use at your own risk.
