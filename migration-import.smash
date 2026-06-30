@@ -237,9 +237,11 @@ sudo a2enmod headers ssl rewrite expires deflate proxy proxy_http proxy_wstunnel
 sudo a2enconf security security-headers
 
 // Make sure all html folders are www-data.
+cd /
 chown -R www-data:www-data var/www/
 
 // Default 0755, change if needed...
+cd /
 chmod 0755 -R var/www/
 
 // Apache configs
@@ -250,14 +252,15 @@ sudo a2enmod php8.4
 
 // Dovcot processing IF using VMAIL (recommended for many vhosts)
 echo `---------------------------------------------------------done!`;
+cd /
 sudo groupadd -g 5000 vmail
-sudo useradd -u 5000 -g vmail -d /var/vmail -m vmail
-sudo chown -R vmail:vmail /var/vmail
-sudo chmod -R 750 /var/vmail
-sudo chown root:dovecot /etc/dovecot/users
-sudo chmod 640 /etc/dovecot/users
+sudo useradd -u 5000 -g vmail -d var/vmail -m vmail
+sudo chown -R vmail:vmail var/vmail
+sudo chmod -R 750 var/vmail
+sudo chown root:dovecot etc/dovecot/users
+sudo chmod 640 etc/dovecot/users
 sudo usermod -aG dovecot dovecot
-sudo ls -la /etc/dovecot/users
+sudo ls -la etc/dovecot/users
 sudo systemctl restart dovecot postfix
 echo `---------------------------------------------------------done!`;
 
@@ -277,7 +280,7 @@ echo `------------------------------------------------------------------ `;
 echo `Finished priming.`;
 echo `------------------------------------------------------------------ `;
 echo `Final manual step 0: install and configure tailscale/headscale manually. Too complex to automate reliably.`;
-echo `Final manual step 1: enable all your vhosts: a2ensite <domainname>`;
+echo `Final manual step 1: enable all your vhosts (if needed): a2ensite <domainname>`;
 echo `Final manual step 2: install MySQL manually: sudo apt install -y mysql-server`;
-echo `Final manual step 3: chmod all cron files, i.e.: chmod +x /etc/cron.daily/00logwatch`;
+echo `Final manual step 3: chmod all cron files, i.e.: chmod +x etc/cron.daily/00logwatch`;
 echo `Final manual step 4: restart all services, or reboot. (recommended)`;
